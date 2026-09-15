@@ -149,6 +149,10 @@ class ReconciliationMixin:
             offset: 0-indexed first row to return.
         """
         with self.open(readonly=True) as book:
+            # _account_reconciliation_status walks every account's
+            # splits. Load the graph once, not lazily per account.
+            self._preload_split_graph(book)
+
             accounts = list(book.accounts)
             rows = self._account_reconciliation_status(book, accounts)
             for r in rows:
