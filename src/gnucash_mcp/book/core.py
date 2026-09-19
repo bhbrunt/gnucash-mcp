@@ -2749,9 +2749,6 @@ class CoreMixin:
             ValueError: If specified account not found.
         """
         with self.open(readonly=True) as book:
-            # Both branches below walk splits.
-            self._preload_split_graph(book)
-
             # If filtering by account, get transactions through that account's splits
             focus_fullname: str | None = None
             if account:
@@ -2782,6 +2779,10 @@ class CoreMixin:
                 # account), but this unfiltered path would render a
                 # stale "Mortgage Payment" recipe identically to a
                 # real event.
+                # The template filter walks every transaction's splits;
+                # load the graph once. The account branch above has
+                # its own targeted preload.
+                self._preload_split_graph(book)
                 template_guids = self._template_account_guids(book)
                 transactions = {
                     t for t in book.transactions
